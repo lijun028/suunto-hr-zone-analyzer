@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Suunto 心率区间校验工具</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand-lockup">
+        <img class="brand-logo" src="./assets/suunto-logo.svg" alt="Suunto" />
+        <div>
+          <p class="eyebrow">JSON Analyzer</p>
+          <h1>心率区间校验</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="sampleButton" class="ghost-button" type="button">加载示例</button>
+        <label class="file-button">
+          <input id="fileInput" type="file" accept=".json,application/json" />
+          <span>上传 JSON</span>
+        </label>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section id="dropZone" class="drop-zone">
+        <div>
+          <strong>选择或拖入 Suunto JSON</strong>
+          <span id="fileName">等待文件</span>
+        </div>
+      </section>
+
+      <section class="toolbar" aria-label="统计规则">
+        <label>
+          <span>时长算法</span>
+          <select id="durationMode">
+            <option value="prevDelta">上一条 HR 到当前 HR 的时间差</option>
+            <option value="point">每个 HR sample 计 1 秒</option>
+            <option value="nextDelta">当前 HR 到下一条 HR 的时间差</option>
+            <option value="nextDeltaLast1">当前 HR 到下一条，末条计 1 秒</option>
+          </select>
+        </label>
+        <label>
+          <span>阈值处理</span>
+          <select id="thresholdMode">
+            <option value="raw">使用 JSON 原始阈值</option>
+            <option value="round">四舍五入到 sample 精度</option>
+            <option value="ceil">向上取到 sample 精度</option>
+            <option value="floor">向下取到 sample 精度</option>
+          </select>
+        </label>
+        <label>
+          <span>边界归属</span>
+          <select id="boundaryMode">
+            <option value="upper">下限归入高区间</option>
+            <option value="lower">边界归入低区间</option>
+          </select>
+        </label>
+        <label>
+          <span>小数位</span>
+          <input id="precisionInput" type="number" min="0" max="6" step="1" value="2" />
+        </label>
+        <button id="exportCsv" class="ghost-button" type="button" disabled>导出 CSV</button>
+      </section>
+
+      <section id="status" class="status-panel">
+        <p>上传文件后会显示官方区间、按 sample 重算的区间，以及差值。</p>
+      </section>
+
+      <section id="summaryGrid" class="summary-grid" aria-label="摘要"></section>
+
+      <section class="table-section">
+        <div class="section-heading">
+          <h2>区间对比</h2>
+          <span id="activeRule"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Zone</th>
+                <th>范围 Hz</th>
+                <th>范围 BPM</th>
+                <th>官方秒数</th>
+                <th>重算秒数</th>
+                <th>差值</th>
+                <th>差值 %</th>
+                <th>点数</th>
+              </tr>
+            </thead>
+            <tbody id="zoneRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="split">
+        <div class="table-section">
+          <div class="section-heading">
+            <h2>规则试算</h2>
+            <span>按绝对误差排序</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>组合</th>
+                  <th>总绝对误差</th>
+                  <th>总时长差</th>
+                </tr>
+              </thead>
+              <tbody id="bestRows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-section">
+          <div class="section-heading">
+            <h2>边界命中</h2>
+            <span id="boundaryHint"></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>阈值</th>
+                  <th>当前 Hz</th>
+                  <th>命中点数</th>
+                  <th>命中秒数</th>
+                  <th>附近点数</th>
+                </tr>
+              </thead>
+              <tbody id="boundaryRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
